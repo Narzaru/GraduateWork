@@ -1,0 +1,5 @@
+﻿.idea/**
+*.cache
+*.txt
+*.pdb
+*.exe
