@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Timers;
 using System.IO.Ports;
+using System.Linq;
+using System.Text;
+using System.Threading;
 
 namespace ArduinoSerial;
 
@@ -16,27 +20,13 @@ public class Arduino
         var ports = SerialPort.GetPortNames();
         foreach (var portName in ports)
         {
-            try
+            if (portName == "COM1") continue; // !TODO(narzaru) delete this <---
+            var arduinoDriver = new ArduinoDriver(portName, boundRate, timeout, 9);
+            var answer = arduinoDriver.SendCommand("W????????");
+            if (Encoding.ASCII.GetString(answer).Contains("!ARDUINO"))
             {
-                SerialPort port = new SerialPort(portName, boundRate);
-                if (!port.IsOpen)
-                {
-                    port.Open();
-                    port.ReadTimeout = (int)timeout.TotalMilliseconds;
-                    port.Write("detect");
-                    var answer = port.ReadLine();
-                    if (answer.Contains("detected"))
-                    {
-                        PortName = portName;
-                        port.Close();
-                        return true;
-                    }
-                    port.Close();
-                }
-            }
-            catch
-            {
-                // ignored
+                PortName = portName;
+                return true;
             }
         }
 
@@ -45,9 +35,5 @@ public class Arduino
 
     public bool PortDetected() => !PortName.Equals(String.Empty);
 
-    public string PortName
-    {
-        get;
-        private set;
-    }
+    public string PortName { get; private set; }
 }
