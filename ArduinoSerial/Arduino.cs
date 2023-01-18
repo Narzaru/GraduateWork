@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Timers;
 using System.IO.Ports;
-using System.Linq;
-using System.Text;
-using System.Threading;
 
 namespace ArduinoSerial;
 
@@ -13,19 +8,45 @@ public class Arduino
     public Arduino()
     {
         PortName = string.Empty;
+        m_driver = new ArduinoDriver();
     }
 
-    public bool AutodetectArduinoPort(int boundRate, TimeSpan timeout)
+    public bool PortDetected() => !string.IsNullOrWhiteSpace(PortName);
+
+    public string PortName { get; private set; }
+
+    public ArduinoDriver Driver => m_driver;
+
+    public bool Connect(string comPortName, int boundRate, TimeSpan timeout, int packetSize)
+    {
+        m_driver.OpenConnection(comPortName, boundRate);
+        if (m_driver.IsConnected)
+        {
+            m_driver.SendCommand("W!ARDUINO!");
+            m_driver.ReadAnswer(packetSize, timeout);
+            if (m_driver.AsString.Contains("!ARDUINO!"))
+            {
+                PortName = comPortName;
+                return true;
+            }
+            else
+            {
+                m_driver.CloseConnection();
+            }
+        }
+
+        return false;
+    }
+
+    public bool AutodetectArduinoPort(int boundRate, TimeSpan timeout, int packetSize)
     {
         var ports = SerialPort.GetPortNames();
-        foreach (var portName in ports)
+
+        foreach (var port in ports)
         {
-            if (portName == "COM1") continue; // !TODO(narzaru) delete this <---
-            var arduinoDriver = new ArduinoDriver(portName, boundRate, timeout, 9);
-            var answer = arduinoDriver.SendCommand("W????????");
-            if (Encoding.ASCII.GetString(answer).Contains("!ARDUINO"))
+            Connect(port, boundRate, timeout, packetSize);
+            if (PortDetected())
             {
-                PortName = portName;
                 return true;
             }
         }
@@ -33,7 +54,5 @@ public class Arduino
         return false;
     }
 
-    public bool PortDetected() => !PortName.Equals(String.Empty);
-
-    public string PortName { get; private set; }
+    private ArduinoDriver m_driver;
 }

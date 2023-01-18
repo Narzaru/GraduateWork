@@ -1,17 +1,18 @@
-#include "Arduino.h"
 #ifndef SERIAL_SERIAL_PROTOCOL_H_
 #define SERIAL_SERIAL_PROTOCOL_H_
 
+#include <Arduino.h>
 #include <HardwareSerial.h>
 #include "protocol.h"
 
+namespace protocol {
 class SerialProtocol {
  public:
   SerialProtocol(HardwareSerial& ostream)
     : os_(ostream) {}
 
   void Loop() {
-    Data data;
+    protocol::Data data;
     for(;;) {
       while (!WaitCommand()) {}
       data = builder_.FromBytes((const byte *)command_.c_str(), command_len_);
@@ -28,15 +29,18 @@ class SerialProtocol {
     return false;
   }
 
-  void ProcessPacket(const Data &data) {
-    static Payload payload;
+  void ProcessPacket(const protocol::Data &data) {
+    static protocol::Payload payload;
 
-    if (data.type == WHO_IS) {
-      memcpy(payload.msg, "ARDUINO\0", PAYLOAD_SIZE);
-      os_.write(builder_.CreatePacket(MESSAGE, payload), PACKET_SIZE);
-    } else {
-      memset(payload.msg, 0, PAYLOAD_SIZE);
-      os_.write(builder_.CreatePacket(ERROR, payload), PACKET_SIZE);
+    if (data.command == PROTOCOL_COMMAND_ECHO) {
+      os_.write(builder_.CreatePacket(PROTOCOL_COMMAND_MESSAGE, data.payload), PROTOCOL_LIMITS_PACKET_LENGTH);
+    }
+    if (data.command == PROTOCOL_COMMAND_MOVE) {
+      memcpy(payload.message, "ISMOVED", 7);
+      os_.write(builder_.CreatePacket(PROTOCOL_COMMAND_MESSAGE, payload), PROTOCOL_LIMITS_PACKET_LENGTH);
+    }
+    if (data.command == PROTOCOL_COMMAND_ERROR) {
+      os_.write(builder_.CreatePacket(PROTOCOL_COMMAND_ERROR, data.payload), PROTOCOL_LIMITS_PACKET_LENGTH);
     }
   }
 
@@ -46,5 +50,5 @@ class SerialProtocol {
   size_t command_len_;
   ProtocolBuilder builder_;
 };
-
+}
 #endif  // SERIAL_SERIAL_PROTOCOL_H_

@@ -1,69 +1,58 @@
-#include "HardwareSerial.h"
-#include "Arduino.h"
 #ifndef SERIAL_PROTOCOL_H_
 #define SERIAL_PROTOCOL_H_
-#include <stdint.h>
 
-// Commands
-#define PACKET_SIZE 9
-#define PAYLOAD_SIZE 8
-#define MESSAGE '!'
-#define WHO_IS 'W'
-#define MOVE_TO 'M'
-#define ERROR 'E'
+#include <Arduino.h>
+#include <HardwareSerial.h>
+#include "protocol_defines.h"
 
-// |command(uint8)[0:1]|position_x(float)[1:5]|position_y(float)[5:8]
-// Offsets
-#define COMMAND 0
-#define PAYLOAD 1
-#define POSITION_X 1
-#define POSITION_Y 5
-
-struct Position {
-  float position_x;
-  float position_y;
-};
-
-union Payload {
-  Position pos;
-  char msg[8];
-};
-
-struct Data {
-  uint8_t type;
-  Payload union_data;
-};
 
 class ProtocolBuilder {
- public:
-  const byte* ToBytes(const Data &data) {
-    memcpy(bytes_ + COMMAND, &data.type, 1);
-    memcpy(bytes_ + POSITION_X, &data.union_data.pos.position_x, 4);
-    memcpy(bytes_ + POSITION_Y, &data.union_data.pos.position_y, 4);
+public:
+  const byte *ToBytes(const protocol::Data &data) {
+    memcpy(bytes_ + PROTOCOL_OFFSETS_COMMAND, &data.command, PROTOCOL_LIMITS_COMMAND_LENGTH);
+    memcpy(bytes_ + PROTOCOL_OFFSETS_PAYLOAD_MOTOR_ID, &data.payload.motor.id, PROTOCOL_LIMITS_PAYLOAD_MOTOR_ID_LENGTH);
+    memcpy(bytes_ + PROTOCOL_OFFSETS_PAYLOAD_MOTOR_POSITION_X, &data.payload.motor.position.x, PROTOCOL_LIMITS_PAYLOAD_MOTOR_POSITION_X_LENGTH);
+    memcpy(bytes_ + PROTOCOL_OFFSETS_PAYLOAD_MOTOR_POSITION_Y, &data.payload.motor.position.y, PROTOCOL_LIMITS_PAYLOAD_MOTOR_POSITION_Y_LENGTH);
     return bytes_;
   }
 
-  Data FromBytes(const byte *bytes, size_t size) {
-    Data data;
-    if (size != PACKET_SIZE) {
-      data.type = ERROR;
-      memset(data.union_data.msg, 0, 8);
-      return data;
+  const protocol::Data &FromBytes(const byte *bytes, size_t message_length) {
+    memset(&data_, 0, sizeof(data_));
+    if (message_length < PROTOCOL_LIMITS_PACKET_LENGTH) {
+      data_.command = PROTOCOL_COMMAND_ERROR;
+      return data_;
     }
-    memcpy(&data.type, bytes + COMMAND, 1);
-    memcpy(&data.union_data.pos.position_x, bytes + POSITION_X, 4);
-    memcpy(&data.union_data.pos.position_y, bytes + POSITION_Y, 4);
-    return data;
+
+    memcpy(&data_.command, bytes + PROTOCOL_OFFSETS_COMMAND, PROTOCOL_LIMITS_COMMAND_LENGTH);
+    byte command = bytes[PROTOCOL_OFFSETS_COMMAND];
+    if (command == PROTOCOL_COMMAND_SET_POSITION_TO) {
+      memcpy(&data_.payload.motor.id, bytes + PROTOCOL_OFFSETS_PAYLOAD_MOTOR_ID, PROTOCOL_LIMITS_PAYLOAD_MOTOR_ID_LENGTH);
+      memcpy(&data_.payload.motor.position.x, bytes + PROTOCOL_OFFSETS_PAYLOAD_MOTOR_POSITION_X, PROTOCOL_LIMITS_PAYLOAD_MOTOR_POSITION_X_LENGTH);
+      memcpy(&data_.payload.motor.position.x, bytes + PROTOCOL_OFFSETS_PAYLOAD_MOTOR_POSITION_Y, PROTOCOL_LIMITS_PAYLOAD_MOTOR_POSITION_Y_LENGTH);
+    } else if (command == PROTOCOL_COMMAND_MESSAGE || command == PROTOCOL_COMMAND_ECHO) {
+      memcpy(data_.payload.message, bytes + PROTOCOL_OFFSETS_PAYLOAD_MESSAGE, PROTOCOL_LIMITS_PAYLOAD_MESSAGE_LENGTH);
+    } else if (command == PROTOCOL_COMMAND_MOVE) {
+    } else {
+      data_.command = PROTOCOL_COMMAND_ERROR;
+    }
+
+    return data_;
   }
 
-  byte* CreatePacket(char type, const Payload &payload) {
-    bytes_[0] = type;
-    memcpy(bytes_ + PAYLOAD, (void *)payload.msg, 8);
+  const byte *CreatePacket(char command, const protocol::Payload &payload) {
+    memset(bytes_, 0, PROTOCOL_LIMITS_PACKET_LENGTH);
+    bytes_[PROTOCOL_OFFSETS_COMMAND] = command;
+
+    if (command == PROTOCOL_COMMAND_MESSAGE) {
+      memcpy(bytes_ + PROTOCOL_OFFSETS_PAYLOAD_MESSAGE, payload.message, PROTOCOL_LIMITS_PAYLOAD_MESSAGE_LENGTH);
+    }
+
     return bytes_;
   }
 
- private:
-  byte bytes_[PACKET_SIZE];
+private:
+  byte bytes_[PROTOCOL_LIMITS_PACKET_LENGTH];
+  protocol::Data data_;
 };
 
 #endif  // SERIAL_PROTOCOL_H_

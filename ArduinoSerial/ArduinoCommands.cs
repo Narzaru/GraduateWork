@@ -9,7 +9,6 @@ public sealed class ArduinoCommands
 
     public static implicit operator string(ArduinoCommands op) { return op.name; }
     public static readonly ArduinoCommands ERROR = new ArduinoCommands(3, "ERROR");
-    //public static readonly ArduinoCommands WAIT = new ArduinoCommands(3, "/WAIT");
     public static readonly ArduinoCommands END_WRITE = new ArduinoCommands(3, "END_WRITE");
     public static readonly ArduinoCommands TIMEOUT = new ArduinoCommands(3, "TIMEOUT");
 

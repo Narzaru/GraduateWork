@@ -2,88 +2,87 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Ports;
-
-// ReSharper disable All
+using System.Text;
 
 namespace ArduinoSerial;
 
 public class ArduinoDriver : IDisposable
 {
-    public byte[] ReadBytes { get; set; } = new byte[] { };
-    public TimeSpan TimeOut { get; set; }
+    public byte[] AsBytesArray => m_bytes.ToArray();
+    public string AsString => Encoding.ASCII.GetString(AsBytesArray);
+    public bool IsConnected { get; private set; }
+    public string PortName => m_serial.PortName;
 
-    public int PacketSize { get; set; }
-
-    public ArduinoDriver(string comPort, int baudRate, TimeSpan timeOut, int packetSize)
+    public ArduinoDriver(string comPort, int baudRate) : this()
     {
-        try
+        OpenConnection(comPort, baudRate);
+    }
+
+    public ArduinoDriver()
+    {
+        IsConnected = false;
+        m_serial = new SerialPort();
+        m_serial.DataReceived += DataReceivedHandler;
+    }
+
+    public bool OpenConnection(string comPort, int baudRate)
+    {
+        CloseConnection();
+        m_serial.PortName = comPort;
+        m_serial.BaudRate = baudRate;
+
+        if (!m_serial.IsOpen)
         {
-            TimeOut = timeOut;
-            PacketSize = packetSize;
-            m_serial = new SerialPort(comPort, baudRate);
-
-            if (!m_serial.IsOpen)
-            {
-                m_serial.DataReceived += Arduino_DataReceived;
-
-                try
-                {
-                    m_serial.Open();
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Serial couldn't open", ex);
-                }
-            }
-            else throw new Exception("Error Serial is already open!");
+            m_serial.Open();
+            IsConnected = true;
         }
-        catch (Exception)
+
+        return IsConnected;
+    }
+
+    public void SendCommand(object obj)
+    {
+        m_serial.WriteTimeout = (int)TimeSpan.FromMilliseconds(1).TotalMilliseconds;
+        if (obj is ArduinoCommands arduinoCommand)
         {
-            Dispose();
-            throw;
+            m_serial.Write(arduinoCommand.ToString());
+        }
+        else if (obj is string command)
+        {
+            m_serial.Write(command);
+        }
+        else if (obj is byte[] bytes)
+        {
+            m_serial.Write(bytes, 0, bytes.Length);
         }
     }
 
-    public byte[] SendCommand(object obj)
+    public void ReadAnswer(int bytesToReceive, TimeSpan timeOut)
     {
-        IsReadingComplete = false;
-
-        if (m_serial.IsOpen)
-        {
-            if (obj is ArduinoCommands arduinoCommand)
-            {
-                m_serial.Write(arduinoCommand.ToString());
-            }
-            else if (obj is string command)
-            {
-                m_serial.Write(command);
-            }
-            else if (obj is byte[] bytes)
-            {
-                m_serial.Write(bytes, 0, bytes.Length);
-            }
-        }
+        m_isReadingComplete = false;
+        m_bytes.Clear();
 
         var timer = Stopwatch.StartNew();
-        while (!IsReadingComplete)
+        while (!m_isReadingComplete)
         {
-            if (timer.ElapsedMilliseconds > TimeOut.TotalMilliseconds)
+            if (timer.ElapsedMilliseconds > timeOut.TotalMilliseconds || m_bytes.Count == bytesToReceive)
             {
                 timer.Stop();
-                IsReadingComplete = true;
+                m_isReadingComplete = true;
             }
         }
-
-        ReadBytes = Bytes.ToArray();
-        return ReadBytes;
     }
 
-    public void Close()
+    public void CloseConnection()
     {
-        m_serial.Close();
+        IsConnected = false;
+        if (m_serial.IsOpen)
+        {
+            m_serial.Close();
+        }
     }
 
-    private void Arduino_DataReceived(object sender, SerialDataReceivedEventArgs e)
+    private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
     {
         if (sender is SerialPort serialPort)
         {
@@ -92,23 +91,18 @@ public class ArduinoDriver : IDisposable
             serialPort.Read(bytes, 0, bytesToRead);
             foreach (var b in bytes)
             {
-                Bytes.Add(b);
-            }
-
-            if (Bytes.Count == PacketSize)
-            {
-                IsReadingComplete = true;
+                m_bytes.Add(b);
             }
         }
     }
 
-    private SerialPort m_serial;
-    private bool IsReadingComplete;
-    private List<byte> Bytes { get; set; } = new();
+    private readonly SerialPort m_serial;
+    private bool m_isReadingComplete;
+    private List<byte> m_bytes = new();
 
     #region dispose_reggion
 
-    private bool disposedValue = false; // To detect redundant calls
+    private bool m_disposed = false;
 
     public void Dispose()
     {
@@ -117,16 +111,14 @@ public class ArduinoDriver : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (!disposedValue)
+        if (!m_disposed)
         {
             if (disposing)
             {
-                if (m_serial.IsOpen)
-                    Close();
+                CloseConnection();
             }
 
-            m_serial = null;
-            disposedValue = true;
+            m_disposed = true;
         }
     }
 
