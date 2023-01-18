@@ -13,46 +13,69 @@ public class MainWindowViewModel : ReactiveObject
 {
     public MainWindowViewModel()
     {
-        IsConnectionInProgress = false;
-        m_arduino = new ArduinoModel();
-        ConnectCommand = ReactiveCommand.Create<string>(ConnectToArduino);
-        UpdatePortsCommand = ReactiveCommand.Create(UpdateListOfPorts);
-        Ports = SerialPort.GetPortNames().ToList();
+        SelectedComPort = String.Empty;
+        IsConnectingInProgress = false;
+        BoundRate = "115200";
+        TimeOut = "4";
+        PacketSize = "10";
+        UpdateComPortsCommand = ReactiveCommand.Create(UpdatePorts);
+        ConnectArduinoCommand = ReactiveCommand.Create(ConnectArduino);
     }
 
-    public List<string> Ports { get; private set; }
-    public ReactiveCommand<Unit, Unit> UpdatePortsCommand { get; }
-    public void UpdateListOfPorts()
+    // Bound rate text box
+    public string BoundRate { get; set; }
+
+    // Time out text box
+    public string TimeOut { get; set; }
+
+    // Packet size text box
+    public string PacketSize { get; set; }
+
+    // Com ports combat box
+    public List<string> ComPorts
     {
-        Ports = SerialPort.GetPortNames().ToList();
+        get => m_listOfComPorts;
+        set => this.RaiseAndSetIfChanged(ref m_listOfComPorts, value);
     }
 
-    public ReactiveCommand<string, Unit> ConnectCommand { get; }
-    public void ConnectToArduino(string parameter)
+    public string SelectedComPort { get; set; }
+
+    // Refresh button
+    public ReactiveCommand<Unit, Unit> UpdateComPortsCommand { get; }
+
+    public void UpdatePorts()
     {
-        IsConnectionInProgress = true;
+        ComPorts = SerialPort.GetPortNames().ToList();
+    }
+
+    // Connect button
+    // TODO(Narzaru) move connection state to model class
+    public ReactiveCommand<Unit, Unit> ConnectArduinoCommand { get; }
+    private void ConnectArduino()
+    {
         var thread = new Thread(() =>
         {
-            m_arduino.Connect(parameter, 115200, TimeSpan.FromSeconds(8), 10);
-            TerminalPresenter = m_arduino.Terminal;
-            IsConnectionInProgress = false;
+            IsConnectingInProgress = true;
+            m_arduinoModel.Connect(
+                SelectedComPort,
+                int.Parse(BoundRate),
+                TimeSpan.FromSeconds(int.Parse(TimeOut)),
+                int.Parse(PacketSize)
+            );
+            IsConnectingInProgress = false;
         });
         thread.Start();
     }
-
-    public string TerminalPresenter
+    public bool IsConnectingInProgress
     {
-        get => m_virtualTerminal;
-        private set => this.RaiseAndSetIfChanged(ref m_virtualTerminal, value);
+        get => m_isConnectingInProgress;
+        private set => this.RaiseAndSetIfChanged(ref m_isConnectingInProgress, value);
     }
+    private bool m_isConnectingInProgress;
 
-    public bool IsConnectionInProgress
-    {
-        get => m_isConnectionInProgress;
-        private set => this.RaiseAndSetIfChanged(ref m_isConnectionInProgress, value);
-    }
+    // current list of com ports
+    private List<string> m_listOfComPorts = new();
 
-    private string m_virtualTerminal = String.Empty;
-    private bool m_isConnectionInProgress;
-    private ArduinoModel m_arduino;
+    // Models
+    private readonly ArduinoModel m_arduinoModel = new ArduinoModel();
 }

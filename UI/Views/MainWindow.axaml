@@ -18,64 +18,24 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid>
-        <Grid.ColumnDefinitions>Auto, *</Grid.ColumnDefinitions>
-        <Grid Grid.Column="0" ShowGridLines="True" RowDefinitions="Auto, *">
-            <StackPanel Name="DebugPanel" Grid.Row="0" Orientation="Horizontal" Height="50">
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Margin="5"
-                    Text="Com Port">
-                </TextBlock>
-                <ComboBox
-                    VerticalAlignment="Center"
-                    Margin="5"
-                    Name="PortsComboBox"
-                    PlaceholderText="select"
-                    IsEnabled="{Binding #ConnectButton.IsEnabled}"
-                    SelectedIndex="0"
-                    Tapped="PortsComboBox_OnTapped">
-                    <ComboBox.Items>
-                        <Binding Path="Ports"></Binding>
-                    </ComboBox.Items>
-                </ComboBox>
-                <Button
-                    VerticalAlignment="Center"
-                    Margin="5"
-                    Name="RefreshComPortsButton"
-                    Command="{Binding UpdatePortsCommand}">
-                    Refresh
-                </Button>
-                <Button
-                    VerticalAlignment="Center"
-                    Margin="5"
-                    Name="ConnectButton"
-                    Command="{Binding ConnectCommand}"
-                    CommandParameter="{Binding #PortsComboBox.SelectedItem}"
-                    IsEnabled="{Binding !IsConnectionInProgress}">
-                    Connect
-                </Button>
+    <Grid ColumnDefinitions="Auto">
+        <Grid Grid.Column="0" ShowGridLines="True" RowDefinitions="Auto, Auto, *">
+            <StackPanel Grid.Row="0" Name="ComPortSetupPanel" Orientation="Horizontal">
+                <TextBox Margin="5" Width="150" Watermark="Bound rate" Text="{Binding BoundRate}"></TextBox>
+                <TextBox Margin="5" Width="150" Watermark="TimeOut in seconds" Text="{Binding TimeOut}"></TextBox>
+                <TextBox Margin="5" Width="150" Watermark="Packet size" Text="{Binding PacketSize}"></TextBox>
             </StackPanel>
-            <TextBlock
-                Grid.Row="1"
-                Background="LightGray"
-                Text="{Binding TerminalPresenter}"
-                Margin="5">
-            </TextBlock>
+            <StackPanel Grid.Row="1" Name="ComPortConnectionPanel" Orientation="Horizontal">
+                <ComboBox Margin="5" Width="150" PlaceholderText="COM port" Items="{Binding ComPorts}"
+                          SelectedItem="{Binding SelectedComPort}" />
+                <Button Margin="5" Width="150" Content="Refresh" HorizontalContentAlignment="Center"
+                        VerticalAlignment="Center"
+                        Command="{Binding UpdateComPortsCommand}" />
+                <Button Margin="5" Width="150" Content="Connect" HorizontalContentAlignment="Center"
+                        VerticalAlignment="Center" IsEnabled="{Binding !IsConnectingInProgress}"
+                        Command="{Binding ConnectArduinoCommand}"/>
+            </StackPanel>
+            <TextBlock Grid.Row="2" Background="LightGray" Margin="5" />
         </Grid>
-        <StackPanel Grid.Column="1" Orientation="Vertical">
-            <Button HorizontalAlignment="Stretch">
-                <TextBlock TextAlignment="Center">Go at home</TextBlock>
-            </Button>
-            <Button HorizontalAlignment="Stretch">
-                <TextBlock TextAlignment="Center">Load fixed points</TextBlock>
-            </Button>
-            <Button HorizontalAlignment="Stretch">
-                <TextBlock TextAlignment="Center">New fixed points</TextBlock>
-            </Button>
-            <Button HorizontalAlignment="Stretch">
-                <TextBlock TextAlignment="Center">Goto fixed points</TextBlock>
-            </Button>
-        </StackPanel>
     </Grid>
 </Window>
