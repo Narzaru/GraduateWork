@@ -1,0 +1,81 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+        x:Class="UI.Views.MainWindow"
+        Icon="/Assets/app.ico"
+        Title="UI"
+        MinWidth="700"
+        MinHeight="400"
+        Width="700"
+        Height="400">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Grid>
+        <Grid.ColumnDefinitions>Auto, *</Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" ShowGridLines="True" RowDefinitions="Auto, *">
+            <StackPanel Name="DebugPanel" Grid.Row="0" Orientation="Horizontal" Height="50">
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Margin="5"
+                    Text="Com Port">
+                </TextBlock>
+                <ComboBox
+                    VerticalAlignment="Center"
+                    Margin="5"
+                    Name="PortsComboBox"
+                    PlaceholderText="select"
+                    IsEnabled="{Binding #ConnectButton.IsEnabled}"
+                    SelectedIndex="0"
+                    Tapped="PortsComboBox_OnTapped">
+                    <ComboBox.Items>
+                        <Binding Path="Ports"></Binding>
+                    </ComboBox.Items>
+                </ComboBox>
+                <Button
+                    VerticalAlignment="Center"
+                    Margin="5"
+                    Name="RefreshComPortsButton"
+                    Command="{Binding UpdatePortsCommand}">
+                    Refresh
+                </Button>
+                <Button
+                    VerticalAlignment="Center"
+                    Margin="5"
+                    Name="ConnectButton"
+                    Command="{Binding ConnectCommand}"
+                    CommandParameter="{Binding #PortsComboBox.SelectedItem}"
+                    IsEnabled="{Binding !IsConnectionInProgress}">
+                    Connect
+                </Button>
+            </StackPanel>
+            <TextBlock
+                Grid.Row="1"
+                Background="LightGray"
+                Text="{Binding TerminalPresenter}"
+                Margin="5">
+            </TextBlock>
+        </Grid>
+        <StackPanel Grid.Column="1" Orientation="Vertical">
+            <Button HorizontalAlignment="Stretch">
+                <TextBlock TextAlignment="Center">Go at home</TextBlock>
+            </Button>
+            <Button HorizontalAlignment="Stretch">
+                <TextBlock TextAlignment="Center">Load fixed points</TextBlock>
+            </Button>
+            <Button HorizontalAlignment="Stretch">
+                <TextBlock TextAlignment="Center">New fixed points</TextBlock>
+            </Button>
+            <Button HorizontalAlignment="Stretch">
+                <TextBlock TextAlignment="Center">Goto fixed points</TextBlock>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
