@@ -3,14 +3,10 @@
         xmlns:vm="using:UI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignHeight="400"
         x:Class="UI.Views.MainWindow"
         Icon="/Assets/app.ico"
-        Title="UI"
-        MinWidth="700"
-        MinHeight="400"
-        Width="700"
-        Height="400">
+        Title="Fixed points controller">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -18,24 +14,42 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid ColumnDefinitions="Auto">
-        <Grid Grid.Column="0" ShowGridLines="True" RowDefinitions="Auto, Auto, *">
-            <StackPanel Grid.Row="0" Name="ComPortSetupPanel" Orientation="Horizontal">
-                <TextBox Margin="5" Width="150" Watermark="Bound rate" Text="{Binding BoundRate}"></TextBox>
-                <TextBox Margin="5" Width="150" Watermark="TimeOut in seconds" Text="{Binding TimeOut}"></TextBox>
-                <TextBox Margin="5" Width="150" Watermark="Packet size" Text="{Binding PacketSize}"></TextBox>
+    <Grid ShowGridLines="True" ColumnDefinitions="Auto, *">
+        <Grid Grid.Column="0" RowDefinitions="Auto, Auto, *"
+              IsEnabled="{Binding !IsConnectingInProgress}">
+            <StackPanel Grid.Row="0" Name="ComPortSetupPanel" Orientation="Horizontal" Spacing="5" Margin="5">
+                <TextBox Width="150" Watermark="Bound rate" Text="{Binding BoundRate}"></TextBox>
+                <TextBox Width="150" Watermark="TimeOut in seconds" Text="{Binding TimeOut}"></TextBox>
+                <TextBox Width="150" Watermark="Packet size" Text="{Binding PacketSize}"></TextBox>
             </StackPanel>
-            <StackPanel Grid.Row="1" Name="ComPortConnectionPanel" Orientation="Horizontal">
-                <ComboBox Margin="5" Width="150" PlaceholderText="COM port" Items="{Binding ComPorts}"
-                          SelectedItem="{Binding SelectedComPort}" />
-                <Button Margin="5" Width="150" Content="Refresh" HorizontalContentAlignment="Center"
+            <StackPanel Grid.Row="1" Name="ComPortConnectionPanel" Orientation="Horizontal" Spacing="5" Margin="5">
+                <ComboBox Name="ComPortsComboBox" Width="150" PlaceholderText="COM port" Items="{Binding ComPorts}"
+                          SelectedItem="{Binding SelectedComPort}">
+                    <Interaction.Behaviors>
+                        <ValueChangedTriggerBehavior Binding="{Binding #ComPortsComboBox.IsDropDownOpen}">
+                            <InvokeCommandAction Command="{Binding UpdateComPortsCommand}"></InvokeCommandAction>
+                        </ValueChangedTriggerBehavior>
+                    </Interaction.Behaviors>
+                </ComboBox>
+                <Button Width="150" Content="Refresh" HorizontalContentAlignment="Center"
                         VerticalAlignment="Center"
                         Command="{Binding UpdateComPortsCommand}" />
-                <Button Margin="5" Width="150" Content="Connect" HorizontalContentAlignment="Center"
-                        VerticalAlignment="Center" IsEnabled="{Binding !IsConnectingInProgress}"
-                        Command="{Binding ConnectArduinoCommand}"/>
+                <Button Width="150" Content="Connect" HorizontalContentAlignment="Center"
+                        VerticalAlignment="Center" Command="{Binding ConnectArduinoCommand}" />
             </StackPanel>
             <TextBlock Grid.Row="2" Background="LightGray" Margin="5" />
+        </Grid>
+        <Grid Grid.Column="1" ShowGridLines="True" RowDefinitions="Auto, *" HorizontalAlignment="Stretch">
+            <StackPanel Grid.Row="0" Spacing="5" Margin="5" Orientation="Vertical">
+                <TextBlock TextAlignment="Center">Control buttons</TextBlock>
+                <StackPanel Spacing="5" Orientation="Horizontal">
+                    <Button Width="150" HorizontalContentAlignment="Center">Goto zero</Button>
+                    <Button Width="150" HorizontalContentAlignment="Center">Move to fixed</Button>
+                </StackPanel>
+                <StackPanel Spacing="5" Orientation="Horizontal">
+                </StackPanel>
+            </StackPanel>
+            <ContentControl Grid.Row="1" Content="{Binding Content}" />
         </Grid>
     </Grid>
 </Window>

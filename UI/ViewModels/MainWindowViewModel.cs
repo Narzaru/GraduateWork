@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Reactive;
 using System.Threading;
+using Data;
+using Microsoft.EntityFrameworkCore;
 using ReactiveUI;
 using UI.Models;
 
 namespace UI.ViewModels;
 
-public class MainWindowViewModel : ReactiveObject
+public class MainWindowViewModel : ViewModelBase
 {
     public MainWindowViewModel()
     {
@@ -42,9 +45,15 @@ public class MainWindowViewModel : ReactiveObject
 
     // Refresh button
     public ReactiveCommand<Unit, Unit> UpdateComPortsCommand { get; }
-
     public void UpdatePorts()
     {
+        using var context = new FixedPointsContext();
+        var pointSet = context.PointsSet!
+            .Include(p => p.Points)
+            .First(ps => ps.Id == 1);
+        pointSet.Points
+            .ToList()
+            .ForEach(p => Trace.WriteLine($"id = {p.Id}"));
         ComPorts = SerialPort.GetPortNames().ToList();
     }
 
@@ -72,6 +81,9 @@ public class MainWindowViewModel : ReactiveObject
         private set => this.RaiseAndSetIfChanged(ref m_isConnectingInProgress, value);
     }
     private bool m_isConnectingInProgress;
+    
+    // View
+    public ViewModelBase Content => new FixedPointsViewModel();
 
     // current list of com ports
     private List<string> m_listOfComPorts = new();

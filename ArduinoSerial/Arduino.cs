@@ -29,10 +29,7 @@ public class Arduino
                 PortName = comPortName;
                 return true;
             }
-            else
-            {
-                m_driver.CloseConnection();
-            }
+            m_driver.CloseConnection();
         }
 
         return false;
