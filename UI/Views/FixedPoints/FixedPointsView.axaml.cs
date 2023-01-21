@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace UI.Views;
+namespace UI.Views.FixedPoints;
 
 public partial class FixedPointsView : UserControl
 {

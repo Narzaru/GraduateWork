@@ -1,0 +1,43 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UI.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:fixedPoints="clr-namespace:UI.ViewModels.FixedPoints"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="410"
+             x:Class="UI.Views.FixedPoints.FixedPointsView">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <fixedPoints:FixedPointsViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Name="StackPanel" Spacing="5" Margin="5" Orientation="Horizontal">
+            <Button Width="150" HorizontalContentAlignment="Center"
+                    Command="{Binding MainWindowParent.LoadFixedPointsCommand}" Content="Load fixed points" />
+            <Button Width="150" HorizontalContentAlignment="Center"
+                    Command="{Binding MainWindowParent.NewFixedPointsCommand}" Content="New fixed points" />
+        </StackPanel>
+        <ScrollViewer Margin="5" DockPanel.Dock="Bottom">
+            <ItemsControl Items="{Binding Points}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock>
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}Point #{0} PositionX={1} PositionY{2}">
+                                        <Binding Path="Id" />
+                                        <Binding Path="PositionX" />
+                                        <Binding Path="PositionY" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

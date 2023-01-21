@@ -1,0 +1,40 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:fixedPoints="clr-namespace:UI.ViewModels.FixedPoints"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UI.Views.FixedPoints.LoadFixedPointsView">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <fixedPoints:LoadFixedPointsViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5" Spacing="5">
+            <Button Width="150" HorizontalContentAlignment="Center" Command="{Binding OkCommand}">Ok</Button>
+            <Button Width="150" HorizontalContentAlignment="Center" Command="{Binding CancelCommand}">Cancel</Button>
+        </StackPanel>
+        <ScrollViewer Margin="5" DockPanel.Dock="Bottom">
+            <ListBox Items="{Binding PointsSet}" SelectedItem="{Binding SelectedItem}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="5">
+                            <TextBlock>
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}Set #{0} Creation DateTime {1} CustomLabel {2}">
+                                        <Binding Path="Id" />
+                                        <Binding Path="CreationTime" />
+                                        <Binding Path="Label" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ListBox>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

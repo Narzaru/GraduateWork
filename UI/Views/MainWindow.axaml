@@ -18,9 +18,9 @@
         <Grid Grid.Column="0" RowDefinitions="Auto, Auto, *"
               IsEnabled="{Binding !IsConnectingInProgress}">
             <StackPanel Grid.Row="0" Name="ComPortSetupPanel" Orientation="Horizontal" Spacing="5" Margin="5">
-                <TextBox Width="150" Watermark="Bound rate" Text="{Binding BoundRate}"></TextBox>
-                <TextBox Width="150" Watermark="TimeOut in seconds" Text="{Binding TimeOut}"></TextBox>
-                <TextBox Width="150" Watermark="Packet size" Text="{Binding PacketSize}"></TextBox>
+                <TextBox Width="150" Watermark="Bound rate" Text="{Binding BoundRate}" />
+                <TextBox Width="150" Watermark="TimeOut in seconds" Text="{Binding TimeOut}" />
+                <TextBox Width="150" Watermark="Packet size" Text="{Binding PacketSize}" />
             </StackPanel>
             <StackPanel Grid.Row="1" Name="ComPortConnectionPanel" Orientation="Horizontal" Spacing="5" Margin="5">
                 <ComboBox Name="ComPortsComboBox" Width="150" PlaceholderText="COM port" Items="{Binding ComPorts}"

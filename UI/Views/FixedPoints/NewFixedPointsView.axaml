@@ -1,0 +1,41 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:fixedPoints="clr-namespace:UI.ViewModels.FixedPoints"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
+             x:Class="UI.Views.FixedPoints.NewFixedPointsView">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <fixedPoints:NewFixedPointsViewModel />
+    </Design.DataContext>
+
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="5" Margin="5">
+            <Button Width="150" HorizontalContentAlignment="Center" Command="{Binding CreateCommand}">Create</Button>
+            <Button Width="150" HorizontalContentAlignment="Center" Command="{Binding CancelCommand}">Cancel</Button>
+            <TextBox Width="150" Watermark="Label" HorizontalAlignment="Center" Text="{Binding Label}" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Spacing="5" Margin="5, 0, 5, 5" Orientation="Vertical">
+            <StackPanel Name="TopStackPanel" Orientation="Horizontal" Spacing="5">
+                <TextBlock Width="150" TextAlignment="Center" VerticalAlignment="Center">First point</TextBlock>
+                <TextBox Width="150" Watermark="point position x" HorizontalAlignment="Center"
+                         Text="{Binding FirstPointPositionX}" />
+
+                <TextBox Width="150" Watermark="point position y" HorizontalAlignment="Center"
+                         Text="{Binding FirstPointPositionY}" />
+
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Width="150" TextAlignment="Center" VerticalAlignment="Center">Second point</TextBlock>
+                <TextBox Width="150" Watermark="point position x" HorizontalAlignment="Center"
+                         Text="{Binding SecondPointPositionX}" />
+                <TextBox Width="150" Watermark="point position x" HorizontalAlignment="Center"
+                         Text="{Binding SecondPointPositionY}" />
+            </StackPanel>
+        </StackPanel>
+    </DockPanel>
+
+</UserControl>
