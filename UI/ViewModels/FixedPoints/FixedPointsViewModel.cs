@@ -23,5 +23,10 @@ public class FixedPointsViewModel : ViewModelBase
 
     private MainWindowViewModel m_parent;
 
+    public FixedPointsViewModel()
+    {
+        throw new System.NotImplementedException();
+    }
+
     #endregion
 }

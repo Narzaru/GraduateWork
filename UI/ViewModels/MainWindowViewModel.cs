@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Reactive;
@@ -20,8 +21,10 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
+        // TODO(narzaru) remove state to a model class
+        m_status = "waiting user input...";
         m_content = List = new FixedPointsViewModel(this);
-        SelectedComPort = String.Empty;
+        SelectedComPort = string.Empty;
         IsConnectingInProgress = false;
         BoundRate = "115200";
         TimeOut = "4";
@@ -30,6 +33,8 @@ public class MainWindowViewModel : ViewModelBase
         ConnectArduinoCommand = ReactiveCommand.Create(ConnectArduino);
         LoadFixedPointsCommand = ReactiveCommand.Create(LoadFixedPoints);
         NewFixedPointsCommand = ReactiveCommand.Create(NewFixedPoints);
+        GoToZeroCommand = ReactiveCommand.Create(GoToZero);
+        MoveToFixedCommand = ReactiveCommand.Create(MoveToFixed);
     }
 
     #endregion
@@ -85,6 +90,9 @@ public class MainWindowViewModel : ViewModelBase
     {
         var thread = new Thread(() =>
         {
+            // TODO(narzaru) remove commands to another class
+            Commands.Insert(0, $"{DateTime.Now} connecting to {SelectedComPort}");
+            Status = "connection in progress...";
             IsConnectingInProgress = true;
             m_arduinoModel.Connect(
                 SelectedComPort,
@@ -92,10 +100,70 @@ public class MainWindowViewModel : ViewModelBase
                 TimeSpan.FromSeconds(int.Parse(TimeOut)),
                 int.Parse(PacketSize)
             );
+            Status = "waiting user input...";
+            Commands.Insert(0,
+                m_arduinoModel.IsConnected
+                    ? $"{DateTime.Now} connected to {SelectedComPort}"
+                    : $"{DateTime.Now} connection error, validate your input");
+
             IsConnectingInProgress = false;
         });
         thread.Start();
     }
+
+    #endregion
+
+    #region GoToZeroCommand
+
+    public ReactiveCommand<Unit, Unit> GoToZeroCommand { get; set; }
+
+    public void GoToZero()
+    {
+        // TODO(narzaru)another state...
+        if (m_arduinoModel.IsConnected)
+        {
+            IsConnectingInProgress = true;
+            new Thread(_ =>
+            {
+                Commands.Insert(0, "move to zero command received");
+                Status = "move to zero...";
+                m_arduinoModel.GoToZero();
+                Status = "waiting user input...";
+                Commands.Insert(0, "move to zero completed");
+                IsConnectingInProgress = false;
+            }).Start();
+        }
+    }
+
+    #endregion
+
+    #region MoveToFixedCommand
+
+    public ReactiveCommand<Unit, Unit> MoveToFixedCommand { get; set; }
+
+    public void MoveToFixed()
+    {
+        // TODO(narzaru)another state...
+        if (m_arduinoModel.IsConnected)
+        {
+            IsConnectingInProgress = true;
+            new Thread(_ =>
+            {
+                Commands.Insert(0, "move to fixed points command received");
+                Status = "move to fixed points...";
+                m_arduinoModel.GoToFixed();
+                Status = "waiting user input...";
+                Commands.Insert(0, "move to fixed points completed");
+                IsConnectingInProgress = false;
+            }).Start();
+        }
+    }
+    
+    #endregion
+
+    #region ListOfArduinoCommands
+
+    public ObservableCollection<string> Commands { get; set; } = new();
 
     #endregion
 
@@ -176,6 +244,18 @@ public class MainWindowViewModel : ViewModelBase
     }
 
     #endregion // FixedPointMenu
+
+    #region StatusTextBox
+
+    public string Status
+    {
+        get => m_status;
+        set => this.RaiseAndSetIfChanged(ref m_status, value);
+    }
+
+    private string m_status;
+
+    #endregion
 
     #region Models
 
