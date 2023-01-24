@@ -7,7 +7,6 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using Data;
-using Data.Models;
 using DynamicData;
 using ReactiveUI;
 using UI.Models;
@@ -158,7 +157,7 @@ public class MainWindowViewModel : ViewModelBase
             }).Start();
         }
     }
-    
+
     #endregion
 
     #region ListOfArduinoCommands
@@ -199,15 +198,13 @@ public class MainWindowViewModel : ViewModelBase
     {
         var vm = new LoadFixedPointsViewModel();
 
-        Observable.Merge(
-                vm.OkCommand,
-                vm.CancelCommand.Select(_ => (PointsSet?)null))
-            .Subscribe(model =>
+        Observable.Merge(vm.OkCommand, vm.CancelCommand)
+            .Subscribe(pointsSet =>
             {
-                if (model != null)
+                if (pointsSet is not null)
                 {
                     List.Points.Clear();
-                    List.Points.AddRange(model.Points);
+                    List.Points.AddRange(pointsSet.Points);
                 }
 
                 Content = List;
@@ -222,9 +219,7 @@ public class MainWindowViewModel : ViewModelBase
     {
         var vm = new NewFixedPointsViewModel();
 
-        Observable.Merge(
-                vm.CreateCommand,
-                vm.CancelCommand.Select(_ => (PointsSet?)null))
+        Observable.Merge(vm.CreateCommand, vm.CancelCommand)
             .Subscribe(model =>
             {
                 if (model != null)

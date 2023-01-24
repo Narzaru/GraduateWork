@@ -12,7 +12,7 @@ public class FixedPointsViewModel : ViewModelBase
     }
 
     public ObservableCollection<Point> Points { get; } = new ObservableCollection<Point>();
-    
+
     #region ParentMainWindow
 
     public MainWindowViewModel MainWindowParent

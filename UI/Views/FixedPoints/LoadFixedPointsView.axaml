@@ -13,18 +13,19 @@
     </Design.DataContext>
 
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5" Spacing="5">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="5">
             <Button Width="150" HorizontalContentAlignment="Center" Command="{Binding OkCommand}">Ok</Button>
             <Button Width="150" HorizontalContentAlignment="Center" Command="{Binding CancelCommand}">Cancel</Button>
+            <TextBox Watermark="Label filter" Width="150" Text="{Binding Filter}" />
         </StackPanel>
-        <ScrollViewer Margin="5" DockPanel.Dock="Bottom">
-            <ListBox Items="{Binding PointsSet}" SelectedItem="{Binding SelectedItem}">
+        <ScrollViewer DockPanel.Dock="Bottom" Margin="0, 5, 0, 0">
+            <ListBox Items="{Binding CurrentPointsSet}" SelectedItem="{Binding SelectedItem}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="5">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
                             <TextBlock>
                                 <TextBlock.Text>
-                                    <MultiBinding StringFormat="{}Set #{0} Creation DateTime {1} CustomLabel {2}">
+                                    <MultiBinding StringFormat="{}Set #{0} Creation DateTime {1} {2}">
                                         <Binding Path="Id" />
                                         <Binding Path="CreationTime" />
                                         <Binding Path="Label" />

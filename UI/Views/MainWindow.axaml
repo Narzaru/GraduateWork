@@ -3,16 +3,14 @@
         xmlns:vm="using:UI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignHeight="400"
+        mc:Ignorable="d" d:DesignHeight="400" d:DesignWidth="400"
         x:Class="UI.Views.MainWindow"
         Icon="/Assets/app.ico"
         Title="Fixed points controller">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+    <Window.DataContext>
         <vm:MainWindowViewModel />
-    </Design.DataContext>
+    </Window.DataContext>
 
     <Grid ShowGridLines="True" ColumnDefinitions="Auto, *" IsEnabled="{Binding !IsConnectingInProgress}">
         <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *">
@@ -54,7 +52,7 @@
                 <StackPanel Spacing="5" Orientation="Horizontal">
                 </StackPanel>
             </StackPanel>
-            <ContentControl Grid.Row="1" Content="{Binding Content}" />
+            <UserControl Margin="5" Grid.Row="1" Content="{Binding Content}" />
         </Grid>
     </Grid>
 </Window>

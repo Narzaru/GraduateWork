@@ -14,20 +14,20 @@
     </Design.DataContext>
 
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Name="StackPanel" Spacing="5" Margin="5" Orientation="Horizontal">
+        <StackPanel DockPanel.Dock="Top" Name="StackPanel" Spacing="5" Orientation="Horizontal">
             <Button Width="150" HorizontalContentAlignment="Center"
                     Command="{Binding MainWindowParent.LoadFixedPointsCommand}" Content="Load fixed points" />
             <Button Width="150" HorizontalContentAlignment="Center"
                     Command="{Binding MainWindowParent.NewFixedPointsCommand}" Content="New fixed points" />
         </StackPanel>
-        <ScrollViewer Margin="5" DockPanel.Dock="Bottom">
+        <ScrollViewer DockPanel.Dock="Bottom">
             <ItemsControl Items="{Binding Points}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock>
                                 <TextBlock.Text>
-                                    <MultiBinding StringFormat="{}Point #{0} PositionX={1} PositionY{2}">
+                                    <MultiBinding StringFormat="{}Point #{0} PositionX={1} PositionY={2}">
                                         <Binding Path="Id" />
                                         <Binding Path="PositionX" />
                                         <Binding Path="PositionY" />
