@@ -39,7 +39,7 @@
                 <TextBlock Text="{Binding Status}" />
             </StackPanel>
             <ScrollViewer Grid.Row="3">
-                <ItemsControl Background="LightGray" Margin="5" Items="{Binding Commands}" />
+                <ItemsControl Background="LightGray" Margin="5" Items="{Binding Logs}" />
             </ScrollViewer>
         </Grid>
         <Grid Grid.Column="1" ShowGridLines="True" RowDefinitions="Auto, *" HorizontalAlignment="Stretch">

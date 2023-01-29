@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO.Ports;
 using System.Linq;
 using System.Reactive;
@@ -26,7 +25,7 @@ public class MainWindowViewModel : ViewModelBase
         SelectedComPort = string.Empty;
         IsConnectingInProgress = false;
         BoundRate = "115200";
-        TimeOut = "4";
+        TimeOut = "2";
         PacketSize = "10";
         UpdateComPortsCommand = ReactiveCommand.Create(UpdatePorts);
         ConnectArduinoCommand = ReactiveCommand.Create(ConnectArduino);
@@ -90,7 +89,7 @@ public class MainWindowViewModel : ViewModelBase
         var thread = new Thread(() =>
         {
             // TODO(narzaru) remove commands to another class
-            Commands.Insert(0, $"{DateTime.Now} connecting to {SelectedComPort}");
+            Logs.AddToHistory($"connecting to {SelectedComPort}");
             Status = "connection in progress...";
             IsConnectingInProgress = true;
             m_arduinoModel.Connect(
@@ -100,10 +99,10 @@ public class MainWindowViewModel : ViewModelBase
                 int.Parse(PacketSize)
             );
             Status = "waiting user input...";
-            Commands.Insert(0,
+            Logs.AddToHistory(
                 m_arduinoModel.IsConnected
-                    ? $"{DateTime.Now} connected to {SelectedComPort}"
-                    : $"{DateTime.Now} connection error, validate your input");
+                    ? $"connected to {SelectedComPort}"
+                    : $"connection error, validate your input");
 
             IsConnectingInProgress = false;
         });
@@ -124,11 +123,11 @@ public class MainWindowViewModel : ViewModelBase
             IsConnectingInProgress = true;
             new Thread(_ =>
             {
-                Commands.Insert(0, "move to zero command received");
+                Logs.AddToHistory("move to zero command received");
                 Status = "move to zero...";
                 m_arduinoModel.GoToZero();
                 Status = "waiting user input...";
-                Commands.Insert(0, "move to zero completed");
+                Logs.AddToHistory("move to zero completed");
                 IsConnectingInProgress = false;
             }).Start();
         }
@@ -148,11 +147,11 @@ public class MainWindowViewModel : ViewModelBase
             IsConnectingInProgress = true;
             new Thread(_ =>
             {
-                Commands.Insert(0, "move to fixed points command received");
+                Logs.AddToHistory("move to fixed points command received");
                 Status = "move to fixed points...";
                 m_arduinoModel.GoToFixed();
                 Status = "waiting user input...";
-                Commands.Insert(0, "move to fixed points completed");
+                Logs.AddToHistory("move to fixed points completed");
                 IsConnectingInProgress = false;
             }).Start();
         }
@@ -160,9 +159,9 @@ public class MainWindowViewModel : ViewModelBase
 
     #endregion
 
-    #region ListOfArduinoCommands
+    #region Logs
 
-    public ObservableCollection<string> Commands { get; set; } = new();
+    public Logs Logs { get; } = new(100);
 
     #endregion
 
