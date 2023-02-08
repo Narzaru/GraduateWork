@@ -1,51 +1,63 @@
+/// File contains defines for constants and describes data types
+
 #ifndef SERIAL_PROTOCOL_DEFINES_H_
 #define SERIAL_PROTOCOL_DEFINES_H_
+
+// Size of packet parts in bytes
+#define PROTOCOL_SIZE_COMMAND 1
+#define PROTOCOL_SIZE_FIRST_POINT_X 4
+#define PROTOCOL_SIZE_FIRST_POINT_Y 4
+#define PROTOCOL_SIZE_SECOND_POINT_X 4
+#define PROTOCOL_SIZE_SECOND_POINT_Y 4
+#define PROTOCOL_SIZE_MESSAGE 16
+#define PROTOCOL_SIZE_PACKET 17
+
+// Defenition protocol commands
+#define PROTOCOL_COMMAND_MESSAGE '!'
+#define PROTOCOL_COMMAND_ECHO 'W'
+#define PROTOCOL_COMMAND_SET_POINTS 'S'
+#define PROTOCOL_COMMAND_SET_POINTS_SUCCESS 's'
+#define PROTOCOL_COMMAND_SET_POINTS_FAILD 'f'
+#define PROTOCOL_COMMAND_MOVE 'M'
+#define PROTOCOL_COMMAND_MOVE_COMPLETED 'm'
+#define PROTOCOL_COMMAND_MOVE_FAILD 'x'
+#define PROTOCOL_COMMAND_MESSAGE_ERROR 'E'
+#define PROTOCOL_COMMAND_COMMAND_IN_PROGRESS 'I'
+
+// Byte's offsets in the packet
+#define PROTOCOL_OFFSET_COMMAND 0x00
+#define PROTOCOL_OFFSET_PAYLOAD 0x01
+#define PROTOCOL_OFFSET_PAYLOAD_MESSAGE 0x01
+#define PROTOCOL_OFFSET_PAYLOAD_POINTS_FIRST_POSITION_X 0x01
+#define PROTOCOL_OFFSET_PAYLOAD_POINTS_FIRST_POSITION_Y 0x05
+#define PROTOCOL_OFFSET_PAYLOAD_POINTS_SECOND_POSITION_X 0x09
+#define PROTOCOL_OFFSET_PAYLOAD_POINTS_SECOND_POSITION_Y 0x0D
+
+// Types
 namespace protocol {
-struct Position {
-  float x;
-  float y;
+struct PointPosition {
+  float X;
+  float Y;
 };
 
-struct Motor {
-  byte id;
-  Position position;
+struct Point {
+  PointPosition Position;
 };
 
-#define PROTOCOL_MESSAGE_LENGTH 9
-union Payload {
-  Motor motor;
-  char message[PROTOCOL_MESSAGE_LENGTH];
+struct PointsSet {
+  Point First;
+  Point Second;
+};
+
+union ProtocolPayload {
+  PointsSet Points;
+  char Message[PROTOCOL_SIZE_MESSAGE];
 };
 
 struct Data {
-  uint8_t command;
-  Payload payload;
+  unsigned char Command;
+  ProtocolPayload Payload;
 };
-
-// Limits. Limits are in bytes.
-#define PROTOCOL_LIMITS_PACKET_LENGTH 10
-#define PROTOCOL_LIMITS_COMMAND_LENGTH 1
-#define PROTOCOL_LIMITS_PAYLOAD_LENGTH 9
-#define PROTOCOL_LIMITS_PAYLOAD_MOTOR_ID_LENGTH 1
-#define PROTOCOL_LIMITS_PAYLOAD_MOTOR_POSITION_X_LENGTH 4
-#define PROTOCOL_LIMITS_PAYLOAD_MOTOR_POSITION_Y_LENGTH 4
-#define PROTOCOL_LIMITS_PAYLOAD_MESSAGE_LENGTH PROTOCOL_MESSAGE_LENGTH
-
-// Commands.
-#define PROTOCOL_COMMAND_MESSAGE '!'
-#define PROTOCOL_COMMAND_ECHO 'W'
-#define PROTOCOL_COMMAND_SET_POSITION_TO 'S'
-#define PROTOCOL_COMMAND_SET_POSITION_TO_COMPLETED 's'
-#define PROTOCOL_COMMAND_MOVE 'M'
-#define PROTOCOL_COMMAND_MOVE_COMPLETED 'm'
-#define PROTOCOL_COMMAND_ERROR 'E'
-
-// Offsets of the packet.
-#define PROTOCOL_OFFSETS_COMMAND 0x00
-#define PROTOCOL_OFFSETS_PAYLOAD 0x01
-#define PROTOCOL_OFFSETS_PAYLOAD_MESSAGE 0x01
-#define PROTOCOL_OFFSETS_PAYLOAD_MOTOR_ID 0x01
-#define PROTOCOL_OFFSETS_PAYLOAD_MOTOR_POSITION_X 0x02
-#define PROTOCOL_OFFSETS_PAYLOAD_MOTOR_POSITION_Y 0x06
 }
+
 #endif  // SERIAL_PROTOCOL_DEFINES_
