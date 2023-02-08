@@ -22,9 +22,10 @@ public class Arduino
         m_driver.OpenConnection(comPortName, boundRate);
         if (m_driver.IsConnected)
         {
-            m_driver.SendCommand("W!ARDUINO!");
-            m_driver.ReadAnswer(packetSize, timeout);
-            if (m_driver.AsString.Contains("!ARDUINO!"))
+            string command = "W0000000000000000";
+            m_driver.Send(command);
+            m_driver.Read(packetSize, timeout);
+            if (m_driver.AsString.Contains(command))
             {
                 PortName = comPortName;
                 return true;

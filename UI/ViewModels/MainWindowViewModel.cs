@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Numerics;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Avalonia.Media;
 using Data;
 using DynamicData;
 using ReactiveUI;
@@ -20,13 +23,17 @@ public class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel()
     {
         // TODO(narzaru) remove state to a model class
-        m_status = "waiting user input...";
+        m_status = new();
+        m_statusColor = new ImageBrush();
+        Status.PropertyChanged += (sender, args) => this.RaisePropertyChanged(nameof(Status));
+        Status.Waiting();
+        StatusColor = Status.Level.ToBrush();
         m_content = List = new FixedPointsViewModel(this);
         SelectedComPort = string.Empty;
         IsConnectingInProgress = false;
         BoundRate = "115200";
         TimeOut = "2";
-        PacketSize = "10";
+        PacketSize = "17";
         UpdateComPortsCommand = ReactiveCommand.Create(UpdatePorts);
         ConnectArduinoCommand = ReactiveCommand.Create(ConnectArduino);
         LoadFixedPointsCommand = ReactiveCommand.Create(LoadFixedPoints);
@@ -90,7 +97,8 @@ public class MainWindowViewModel : ViewModelBase
         {
             // TODO(narzaru) remove commands to another class
             Logs.AddToHistory($"connecting to {SelectedComPort}");
-            Status = "connection in progress...";
+            Status.Connecting();
+            StatusColor = Status.Level.ToBrush();
             IsConnectingInProgress = true;
             m_arduinoModel.Connect(
                 SelectedComPort,
@@ -98,7 +106,8 @@ public class MainWindowViewModel : ViewModelBase
                 TimeSpan.FromSeconds(int.Parse(TimeOut)),
                 int.Parse(PacketSize)
             );
-            Status = "waiting user input...";
+            Status.Waiting();
+            StatusColor = Status.Level.ToBrush();
             Logs.AddToHistory(
                 m_arduinoModel.IsConnected
                     ? $"connected to {SelectedComPort}"
@@ -117,20 +126,21 @@ public class MainWindowViewModel : ViewModelBase
 
     public void GoToZero()
     {
-        // TODO(narzaru)another state...
-        if (m_arduinoModel.IsConnected)
+        // TODO(narzaru) remove another state...
+        if (!m_arduinoModel.IsConnected) return;
+
+        IsConnectingInProgress = true;
+        new Thread(_ =>
         {
-            IsConnectingInProgress = true;
-            new Thread(_ =>
-            {
-                Logs.AddToHistory("move to zero command received");
-                Status = "move to zero...";
-                m_arduinoModel.GoToZero();
-                Status = "waiting user input...";
-                Logs.AddToHistory("move to zero completed");
-                IsConnectingInProgress = false;
-            }).Start();
-        }
+            Logs.AddToHistory("move to zero command received");
+            Status.MoveTowardsZero();
+            StatusColor = Status.Level.ToBrush();
+            m_arduinoModel.GoToZero();
+            Status.Waiting();
+            StatusColor = Status.Level.ToBrush();
+            Logs.AddToHistory("move to zero completed");
+            IsConnectingInProgress = false;
+        }).Start();
     }
 
     #endregion
@@ -147,10 +157,21 @@ public class MainWindowViewModel : ViewModelBase
             IsConnectingInProgress = true;
             new Thread(_ =>
             {
+                if (List.Points.Count != 2)
+                {
+                    Logs.AddToHistory("Incorrect fixed points");
+                    IsConnectingInProgress = false;
+                    return;
+                }
+
                 Logs.AddToHistory("move to fixed points command received");
-                Status = "move to fixed points...";
-                m_arduinoModel.GoToFixed();
-                Status = "waiting user input...";
+                Status.MovingTowards();
+                StatusColor = Status.Level.ToBrush();
+                m_arduinoModel.GoToFixed(
+                    new Vector2(List.Points[0].PositionX, List.Points[0].PositionY),
+                    new Vector2(List.Points[1].PositionX, List.Points[1].PositionY));
+                Status.Waiting();
+                StatusColor = Status.Level.ToBrush();
                 Logs.AddToHistory("move to fixed points completed");
                 IsConnectingInProgress = false;
             }).Start();
@@ -241,13 +262,21 @@ public class MainWindowViewModel : ViewModelBase
 
     #region StatusTextBox
 
-    public string Status
+    public CurrentStatus Status
     {
         get => m_status;
-        set => this.RaiseAndSetIfChanged(ref m_status, value);
+        set => m_status = value;
     }
 
-    private string m_status;
+    public IBrush StatusColor
+    {
+        get => m_statusColor;
+        set => this.RaiseAndSetIfChanged(ref m_statusColor, value);
+    }
+
+    private CurrentStatus m_status;
+
+    private IBrush m_statusColor;
 
     #endregion
 

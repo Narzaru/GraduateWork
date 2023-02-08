@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading;
+using ArduinoSerial.Interfaces;
 
 namespace UI.Models;
 
-public class Logs : ObservableCollection<string>
+public class Logs : ObservableCollection<string>, ICommandLogger 
 {
     public Logs(int maxSize)
     {
@@ -22,6 +23,11 @@ public class Logs : ObservableCollection<string>
         Insert(0, WrapString(command));
 
         m_mutex.ReleaseMutex();
+    }
+
+    public void NewLog(string message)
+    {
+        AddToHistory(message);
     }
 
     private string WrapString(string command) => $"{DateTime.Now} {command}";

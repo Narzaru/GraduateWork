@@ -2,24 +2,18 @@
 
 namespace ArduinoSerial;
 
-public sealed class ArduinoCommands
+public class BaseArduinoCommand
 {
-    private readonly String name;
-    private readonly int value;
-
-    public static implicit operator string(ArduinoCommands op) { return op.name; }
-    public static readonly ArduinoCommands ERROR = new ArduinoCommands(3, "ERROR");
-    public static readonly ArduinoCommands END_WRITE = new ArduinoCommands(3, "END_WRITE");
-    public static readonly ArduinoCommands TIMEOUT = new ArduinoCommands(3, "TIMEOUT");
-
-    private ArduinoCommands(int value, String name)
+    public BaseArduinoCommand(int packetSize)
     {
-        this.name = name;
-        this.value = value;
+        PacketSize = packetSize;
+        BytesArray = new Byte[PacketSize];
     }
 
-    public override String ToString()
-    {
-        return name;
-    }
+    public Byte[] Bytes => BytesArray;
+    public int BytesCount => PacketSize;
+
+    protected Byte[] BytesArray;
+    protected readonly int PacketSize;
 }
+

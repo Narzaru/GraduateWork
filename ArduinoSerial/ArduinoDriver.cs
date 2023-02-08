@@ -3,15 +3,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
+using System.Threading;
+using ArduinoSerial.Interfaces;
 
 namespace ArduinoSerial;
 
-public class ArduinoDriver : IDisposable
+public class ArduinoDriver : IArduinoDriver, IDisposable
 {
-    public byte[] AsBytesArray => m_bytes.ToArray();
-    public string AsString => Encoding.ASCII.GetString(AsBytesArray);
+    public byte[] Bytes => m_bytes.ToArray();
+    public List<byte> AsByteList => m_bytes;
+    public string AsString => Encoding.ASCII.GetString(m_bytes.ToArray());
+
     public bool IsConnected { get; private set; }
     public string PortName => m_serial.PortName;
+
+    public event ConnectionLost? OnConnectionLost;
 
     public ArduinoDriver(string comPort, int baudRate) : this()
     {
@@ -23,6 +29,7 @@ public class ArduinoDriver : IDisposable
         IsConnected = false;
         m_serial = new SerialPort();
         m_serial.DataReceived += DataReceivedHandler;
+        new Thread(_ => CheckConnection(TimeSpan.FromSeconds(0.5))).Start();
     }
 
     public bool OpenConnection(string comPort, int baudRate)
@@ -40,12 +47,11 @@ public class ArduinoDriver : IDisposable
         return IsConnected;
     }
 
-    public void SendCommand(object obj)
+    public void Send(object obj)
     {
-        m_serial.WriteTimeout = (int)TimeSpan.FromMilliseconds(1).TotalMilliseconds;
-        if (obj is ArduinoCommands arduinoCommand)
+        if (obj is BaseArduinoCommand arduinoCommand)
         {
-            m_serial.Write(arduinoCommand.ToString());
+            m_serial.Write(arduinoCommand.Bytes, 0, arduinoCommand.BytesCount);
         }
         else if (obj is string command)
         {
@@ -57,7 +63,7 @@ public class ArduinoDriver : IDisposable
         }
     }
 
-    public void ReadAnswer(int bytesToReceive, TimeSpan timeOut)
+    public void Read(int bytesToReceive, TimeSpan timeOut)
     {
         m_isReadingComplete = false;
         m_bytes.Clear();
@@ -92,6 +98,23 @@ public class ArduinoDriver : IDisposable
             foreach (var b in bytes)
             {
                 m_bytes.Add(b);
+            }
+        }
+    }
+
+    private void CheckConnection(TimeSpan period)
+    {
+        while (!m_disposed)
+        {
+            Thread.Sleep(period);
+            if (IsConnected)
+            {
+                if (!m_serial.IsOpen)
+                {
+                    IsConnected = false;
+                    CloseConnection();
+                    OnConnectionLost?.Invoke(m_serial.PortName);
+                }
             }
         }
     }
