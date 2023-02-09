@@ -3,12 +3,14 @@
 
 #include <Arduino.h>
 #include <HardwareSerial.h>
-#include "protocol.h"
+
+#include "protocol_defines.h"
+#include "protocol_translator.h"
 
 namespace protocol {
-class SerialProtocol {
+class SerialDriver {
  public:
-  SerialProtocol(HardwareSerial& ostream)
+  SerialDriver(HardwareSerial& ostream)
     : os_(ostream) {}
 
   protocol::Data ReadData() {

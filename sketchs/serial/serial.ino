@@ -1,15 +1,17 @@
-#include "serial_protocol.h"
+#include "serial_driver.h"
+#include "controller.h"
 
-protocol::SerialProtocol protocolProcess(Serial);
+protocol::SerialDriver serial_driver(Serial);
+Controller controller(serial_driver);
 bool is_data_proccessed;
 protocol::Data data;
 
 void serialEvent() {
-  data = protocolProcess.ReadData();
+  data = serial_driver.ReadData();
   if (is_data_proccessed == false) {
     data.Command = PROTOCOL_COMMAND_COMMAND_IN_PROGRESS;
     memset(&data.Payload, 0, sizeof(data.Payload));
-    protocolProcess.WriteData(data);
+    serial_driver.WriteData(data);
   } else {
     is_data_proccessed = false;
   }
@@ -23,17 +25,7 @@ void setup() {
 
 void loop() {
   if (!is_data_proccessed) {
-    if (data.Command == PROTOCOL_COMMAND_ECHO) {
-      protocolProcess.WriteData(data);
-    } else if (data.Command == PROTOCOL_COMMAND_SET_POINTS) {
-      memset(&data.Payload, 0, sizeof(data.Payload));
-      memcpy(data.Payload.Message, "POINTS SET", 10);
-      data.Command = PROTOCOL_COMMAND_SET_POINTS_SUCCESS;
-      protocolProcess.WriteData(data);
-    } else if (data.Command == PROTOCOL_COMMAND_MESSAGE_ERROR) {
-      data.Command = PROTOCOL_COMMAND_MESSAGE_ERROR;
-      protocolProcess.WriteData(data);
-    }
-    is_data_proccessed = true;
+    controller.ProcessData(&data);
   }
+  is_data_proccessed = true;
 }
