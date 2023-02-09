@@ -10,9 +10,9 @@ namespace ArduinoSerial;
 
 public class ArduinoDriver : IArduinoDriver, IDisposable
 {
-    public byte[] Bytes => m_bytes.ToArray();
-    public List<byte> AsByteList => m_bytes;
-    public string AsString => Encoding.ASCII.GetString(m_bytes.ToArray());
+    public byte[] Bytes => m_readBytes.ToArray();
+    public List<byte> AsByteList => m_readBytes;
+    public string AsString => Encoding.ASCII.GetString(m_readBytes.ToArray());
 
     public bool IsConnected { get; private set; }
     public string PortName => m_serial.PortName;
@@ -66,17 +66,20 @@ public class ArduinoDriver : IArduinoDriver, IDisposable
     public void Read(int bytesToReceive, TimeSpan timeOut)
     {
         m_isReadingComplete = false;
-        m_bytes.Clear();
 
         var timer = Stopwatch.StartNew();
         while (!m_isReadingComplete)
         {
-            if (timer.ElapsedMilliseconds > timeOut.TotalMilliseconds || m_bytes.Count == bytesToReceive)
+            if (timer.ElapsedMilliseconds > timeOut.TotalMilliseconds || m_buffer.Count == bytesToReceive)
             {
                 timer.Stop();
                 m_isReadingComplete = true;
             }
         }
+
+        m_readBytes.Clear();
+        m_readBytes.AddRange(m_buffer);
+        m_buffer.Clear();
     }
 
     public void CloseConnection()
@@ -97,7 +100,7 @@ public class ArduinoDriver : IArduinoDriver, IDisposable
             serialPort.Read(bytes, 0, bytesToRead);
             foreach (var b in bytes)
             {
-                m_bytes.Add(b);
+                m_buffer.Add(b);
             }
         }
     }
@@ -121,7 +124,8 @@ public class ArduinoDriver : IArduinoDriver, IDisposable
 
     private readonly SerialPort m_serial;
     private bool m_isReadingComplete;
-    private List<byte> m_bytes = new();
+    private List<byte> m_readBytes = new();
+    private List<byte> m_buffer = new();
 
     #region dispose_reggion
 
