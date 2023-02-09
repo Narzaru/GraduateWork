@@ -57,7 +57,7 @@ public class LoadFixedPointsViewModel : ViewModelBase
             selector: item => item is not null);
 
         OkCommand = ReactiveCommand.Create(() => SelectedItem, okEnable);
-        CancelCommand = ReactiveCommand.Create(() => SelectedItem);
+        CancelCommand = ReactiveCommand.Create(() => (PointsSet?)null);
     }
 
     #endregion
