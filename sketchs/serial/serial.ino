@@ -5,6 +5,7 @@ protocol::SerialDriver serial_driver(Serial);
 Controller controller(serial_driver);
 bool is_data_proccessed;
 protocol::Data data;
+protocol::PointsSet points;
 
 void serialEvent() {
   data = serial_driver.ReadData();
