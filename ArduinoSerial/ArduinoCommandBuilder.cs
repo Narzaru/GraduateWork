@@ -81,7 +81,7 @@ public class ArduinoCommandBuilder
 
     public BaseArduinoCommand Build()
     {
-        // Load packet header to output list of bytes
+        // Put packet header to output list of bytes
         m_bytes.Add(Convert.ToByte(m_header));
 
         // if message is not set, load data from a points
@@ -108,11 +108,11 @@ public class ArduinoCommandBuilder
             m_command.Bytes[i] = m_bytes[i];
         }
 
-        // after work clear data
+        // After work clear the data to add the ability to set a other parameters.
         m_message = string.Empty;
         m_bytes.Clear();
         
-        // return build command class
+        // return command class
         return m_command;
     }
 
