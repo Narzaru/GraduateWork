@@ -11,6 +11,9 @@
         <Folder Include="Models\" />
         <AvaloniaResource Include="Assets\**" />
         <None Remove=".gitignore" />
+        <None Remove="points.db" />
+        <None Remove="points.db-shm" />
+        <None Remove="points.db-wal" />
     </ItemGroup>
 
     <ItemGroup>

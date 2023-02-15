@@ -2,15 +2,31 @@
 
 namespace ArduinoSerial.Interfaces
 {
-    public delegate void ConnectionLost(string portName);
-
-    public interface IArduinoDriver
+    public interface IArduinoDriver : IDisposable
     {
-        public event ConnectionLost? OnConnectionLost;
+        public delegate void Connection(string portName);
+
+        public delegate void MessageReceived(byte[] answer);
+
+        public delegate void MessageSent();
+
+        public event Connection? OnConnectionLost;
+        public event Connection? OnConnection;
+        public event MessageReceived? OnMessageReceived;
+        public event MessageSent? OnMessageSent;
+
+        public string ConnectionPort { get; }
+        public bool IsConnected { get; }
+        public bool IsInProgress { get; }
+        public byte[] BytesRead { get; }
+
+        public void CloseConnection();
+        public void OpenConnection(string portName, int baudRate);
 
         public void Send(object obj);
         public void Read(int bytesToReceive, TimeSpan timeOut);
 
-        public byte[] Bytes { get; }
+        public void ReadBlocking(int bytesToReceive, TimeSpan timeOut);
+        public void SendBlocking(object obj);
     }
 }

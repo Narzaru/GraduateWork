@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using ArduinoSerial;
+using ArduinoSerial.Command;
 
 namespace UI.Models;
 
@@ -19,35 +20,29 @@ public class ArduinoModel
         m_arduino.Connect(comPortName, boundRate, timeout, packetSize);
     }
 
-    public void GoToZero()
+    public bool GoToZero()
     {
-        m_arduino.Driver.Send(
+        m_arduino.Driver.SendBlocking(
             m_builder
                 .SetHeader(ProtocolCommands.SetPoints)
                 .SetFirstPoint(new Vector2(0.0f, 0.0f))
                 .SetSecondPoint(new Vector2(0.0f, 0.0f))
                 .Build());
-        m_arduino.Driver.Read(17, TimeSpan.FromSeconds(5));
+        m_arduino.Driver.ReadBlocking(17, TimeSpan.FromSeconds(5));
 
-        if (m_arduino.Driver.AsString[0] == ProtocolCommands.SetPointsSuccess.ToChar())
-        {
-            Thread.Sleep(TimeSpan.FromSeconds(4));
-        }
+        return m_arduino.Driver.BytesRead[0] == ProtocolCommands.SetPointsSuccess.ToChar();
     }
 
-    public void GoToFixed(Vector2 first, Vector2 second)
+    public bool GoToFixed(Vector2 first, Vector2 second)
     {
-        m_arduino.Driver.Send(
+        m_arduino.Driver.SendBlocking(
             m_builder
-            .SetHeader(ProtocolCommands.SetPoints)
-            .SetFirstPoint(first)
-            .SetSecondPoint(second)
-            .Build());
-        m_arduino.Driver.Read(17, TimeSpan.FromSeconds(5));
-        if (m_arduino.Driver.AsString[0] == ProtocolCommands.SetPointsSuccess.ToChar())
-        {
-            // !TODO(narzaru) do stuff
-        }
+                .SetHeader(ProtocolCommands.SetPoints)
+                .SetFirstPoint(first)
+                .SetSecondPoint(second)
+                .Build());
+        m_arduino.Driver.ReadBlocking(17, TimeSpan.FromSeconds(5));
+        return m_arduino.Driver.BytesRead[0] == ProtocolCommands.SetPointsSuccess.ToChar();
     }
 
     public bool IsConnected => m_arduino.Driver.IsConnected;

@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-namespace ArduinoSerial;
+namespace ArduinoSerial.Command;
 
 public enum ProtocolCommands
 {
@@ -48,7 +47,7 @@ public class ArduinoCommandBuilder
     {
         m_bytes = new List<byte>();
         // TODO(narzaru) hardcode here !
-        m_command = new BaseArduinoCommand(17);
+        m_command = new BaseArduinoCommand();
         m_message = string.Empty;
         m_header = char.MinValue;
         m_firstPoint = new Vector2();
@@ -75,7 +74,13 @@ public class ArduinoCommandBuilder
 
     public ArduinoCommandBuilder SetMessage(string message)
     {
-        m_bytes.AddRange(Encoding.ASCII.GetBytes(message));
+        m_message = message;
+        return this;
+    }
+
+    public ArduinoCommandBuilder SetPacketSize(int packetSize)
+    {
+        m_packetSize = packetSize;
         return this;
     }
 
@@ -95,23 +100,22 @@ public class ArduinoCommandBuilder
         }
         else
         {
-            if (m_message.Length < m_command.BytesCount)
-            {
-                m_message = m_message.PadRight(m_command.BytesCount - m_message.Length);
-            }
-            m_bytes.AddRange(Encoding.UTF8.GetBytes(m_message));
+            m_bytes.AddRange(Encoding.ASCII.GetBytes(m_message));
+        }
+
+        if (m_bytes.Count < m_packetSize)
+        {
+            m_bytes.AddRange(Enumerable.Repeat(byte.MinValue, m_packetSize - m_bytes.Count));
         }
 
         // copy bytes list to bytes array
-        for (int i = 0; i < m_bytes.Count; ++i)
-        {
-            m_command.Bytes[i] = m_bytes[i];
-        }
+        m_command.Bytes = m_bytes.ToArray();
 
         // After work clear the data to add the ability to set a other parameters.
         m_message = string.Empty;
+        m_packetSize = -1;
         m_bytes.Clear();
-        
+
         // return command class
         return m_command;
     }
@@ -123,4 +127,5 @@ public class ArduinoCommandBuilder
     private char m_header;
     private Vector2 m_firstPoint;
     private Vector2 m_secondPoint;
+    private int m_packetSize;
 }

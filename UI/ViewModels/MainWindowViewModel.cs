@@ -103,7 +103,7 @@ public class MainWindowViewModel : ViewModelBase
             m_arduinoModel.Connect(
                 SelectedComPort,
                 int.Parse(BoundRate),
-                TimeSpan.FromSeconds(int.Parse(TimeOut)),
+                TimeSpan.FromSeconds(float.Parse(TimeOut)),
                 int.Parse(PacketSize)
             );
             Status.Waiting();
@@ -135,10 +135,10 @@ public class MainWindowViewModel : ViewModelBase
             Logs.AddToHistory("move to zero command received");
             Status.MoveTowardsZero();
             StatusColor = Status.Level.ToBrush();
-            m_arduinoModel.GoToZero();
+            var isSuccess = m_arduinoModel.GoToZero();
             Status.Waiting();
             StatusColor = Status.Level.ToBrush();
-            Logs.AddToHistory("move to zero completed");
+            Logs.AddToHistory(isSuccess ? "move to zero completed" : "move to zero error");
             IsConnectingInProgress = false;
         }).Start();
     }
@@ -167,12 +167,12 @@ public class MainWindowViewModel : ViewModelBase
                 Logs.AddToHistory("move to fixed points command received");
                 Status.MovingTowards();
                 StatusColor = Status.Level.ToBrush();
-                m_arduinoModel.GoToFixed(
+                var isSuccess = m_arduinoModel.GoToFixed(
                     new Vector2(List.Points[0].PositionX, List.Points[0].PositionY),
                     new Vector2(List.Points[1].PositionX, List.Points[1].PositionY));
                 Status.Waiting();
                 StatusColor = Status.Level.ToBrush();
-                Logs.AddToHistory("move to fixed points completed");
+                Logs.AddToHistory(isSuccess ? "move to fixed points completed" : "move to fixed points error");
                 IsConnectingInProgress = false;
             }).Start();
         }
