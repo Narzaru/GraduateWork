@@ -22,29 +22,30 @@ public class ArduinoModel
 
     public bool GoToZero()
     {
-        m_arduino.Driver.SendBlocking(
+        Task.Run(() => m_arduino.Driver.SendInBlocking(
             m_builder
                 .SetHeader(ProtocolCommands.SetPoints)
                 .SetFirstPoint(new Vector2(0.0f, 0.0f))
                 .SetSecondPoint(new Vector2(0.0f, 0.0f))
-                .Build());
-        m_arduino.Driver.ReadBlocking(17, TimeSpan.FromSeconds(5));
+                .Build()));
+        m_arduino.Driver.ReadInBlocking(17, TimeSpan.FromSeconds(5));
 
         return m_arduino.Driver.BytesRead[0] == ProtocolCommands.SetPointsSuccess.ToChar();
     }
 
     public bool GoToFixed(Vector2 first, Vector2 second)
     {
-        m_arduino.Driver.SendBlocking(
+        m_arduino.Driver.SendInBlocking(
             m_builder
                 .SetHeader(ProtocolCommands.SetPoints)
                 .SetFirstPoint(first)
                 .SetSecondPoint(second)
                 .Build());
-        m_arduino.Driver.ReadBlocking(17, TimeSpan.FromSeconds(5));
+        m_arduino.Driver.ReadInBlocking(17, TimeSpan.FromSeconds(5));
         return m_arduino.Driver.BytesRead[0] == ProtocolCommands.SetPointsSuccess.ToChar();
     }
 
+    public Arduino Arduino => m_arduino;
     public bool IsConnected => m_arduino.Driver.IsConnected;
     private Arduino m_arduino;
     private ArduinoCommandBuilder m_builder;

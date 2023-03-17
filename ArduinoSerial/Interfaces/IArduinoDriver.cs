@@ -26,7 +26,7 @@ namespace ArduinoSerial.Interfaces
         public void Send(object obj);
         public void Read(int bytesToReceive, TimeSpan timeOut);
 
-        public void ReadBlocking(int bytesToReceive, TimeSpan timeOut);
-        public void SendBlocking(object obj);
+        public void ReadInBlocking(int bytesToReceive, TimeSpan timeOut);
+        public void SendInBlocking(object obj);
     }
 }

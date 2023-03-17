@@ -37,8 +37,8 @@ public class Arduino
             .SetPacketSize(17)
             .Build();
 
-        m_driver.SendBlocking(command);
-        m_driver.ReadBlocking(packetSize, timeout);
+        m_driver.SendInBlocking(command);
+        m_driver.ReadInBlocking(packetSize, timeout);
         if (m_driver.BytesRead.SequenceEqual(command.Bytes))
         {
             PortName = comPortName;

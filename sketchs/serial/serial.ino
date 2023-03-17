@@ -24,8 +24,6 @@ void setup() {
   Serial.write("Inited!");
 }
 
-//// макаронный код, пока нормального решения не придумано...
-// флаг, чтобы раз за цикл заходить и по чуть-чуть двигать моторы
 bool is_moving;
 int i = 0;
 void loop() {
@@ -40,19 +38,16 @@ void loop() {
       auto data = controller.get_data();
       // validate points
       // if points valid - true, else - false
-      controller.SetPointsCompleted(false, &data);
+      controller.SetPointsCompleted(true, &data);
     } else if (controller.get_command() == State::kMoveToPoints) {
       is_moving = true;
       controller.MoveToPointsInProgress();
     }
   }
   if (is_moving) {
+    // эмуляция работы
     delay(1000);
-    ++i;
-    if (i >= 5) {
-      i = 0;
-      is_moving = false;
-      controller.MoveToPointsCompleted(true, &data);
-    }
+    is_moving = false;
+    controller.MoveToPointsCompleted(true, &data);
   }
 }

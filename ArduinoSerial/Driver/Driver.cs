@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Ports;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using ArduinoSerial.Command;
 using ArduinoSerial.Interfaces;
 
@@ -68,7 +66,7 @@ public class Driver : IArduinoDriver
         new Thread(_ =>
         {
             m_inProgress = true;
-            SendBlocking(obj);
+            SendInBlocking(obj);
             OnMessageSent?.Invoke();
             m_inProgress = false;
         }).Start();
@@ -79,13 +77,13 @@ public class Driver : IArduinoDriver
         new Thread(_ =>
         {
             m_inProgress = true;
-            ReadBlocking(bytesToReceive, timeOut);
+            ReadInBlocking(bytesToReceive, timeOut);
             OnMessageReceived?.Invoke(BytesRead);
             m_inProgress = false;
         }).Start();
     }
 
-    public void ReadBlocking(int bytesToReceive, TimeSpan timeOut)
+    public void ReadInBlocking(int bytesToReceive, TimeSpan timeOut)
     {
         if (m_inProgress) throw new Exception("Reading currently in progress");
         m_timer.Restart();
@@ -99,7 +97,7 @@ public class Driver : IArduinoDriver
         m_buffer.Clear();
     }
 
-    public void SendBlocking(object obj)
+    public void SendInBlocking(object obj)
     {
         if (m_inProgress) throw new Exception("Send currently in progress");
         if (obj is BaseArduinoCommand arduinoCommand)
@@ -188,8 +186,6 @@ public class Driver : IArduinoDriver
     public void Dispose()
     {
         Dispose(true);
-
-        GC.SuppressFinalize(this);
     }
 
     protected virtual void Dispose(bool disposing)

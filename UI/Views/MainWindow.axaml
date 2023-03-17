@@ -12,7 +12,7 @@
         <vm:MainWindowViewModel />
     </Window.DataContext>
 
-    <Grid ShowGridLines="True" ColumnDefinitions="Auto, *" IsEnabled="{Binding !IsConnectingInProgress}">
+    <Grid ShowGridLines="True" ColumnDefinitions="Auto, *" IsEnabled="{Binding !IsExecuting}">
         <Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *">
             <StackPanel Grid.Row="0" Name="ComPortSetupPanel" Orientation="Horizontal" Spacing="5" Margin="5">
                 <TextBox Width="150" Watermark="Bound rate" Text="{Binding BoundRate}" />

@@ -5,7 +5,7 @@
 
 #include "serial_driver.h"
 #include "protocol_defines.h"
-#include "serial_protocol.h"
+#include "protocol_translator.h"
 
 enum class State {
   kNone,
